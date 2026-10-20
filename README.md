@@ -28,26 +28,18 @@ Data lives in the browser's localStorage under `biomarkers-app/data`. To change
 the persisted shape, bump `SCHEMA_VERSION` in `domain/types.ts` and add a step in
 `storage/migrations.ts`.
 
-## Install on a phone (PWA)
+## Install the app
 
-The app is an installable Progressive Web App: it has a manifest, icons and a
-service worker (`public/sw.js`) so it opens full-screen from the home screen and
-works offline.
+Open **https://markuscampidell.github.io/biomarkers-app/** on your phone and tap
+**Install app** in the banner at the top. On iPhone the banner shows how: Share →
+**Add to Home Screen**. The app then opens full-screen from the home screen and
+works offline. Your data stays on your own device.
 
-Phones only offer installation for sites served over **HTTPS**, so the build has
-to be hosted somewhere (the `http://192.168…` dev URL won't install). Options:
+## Publishing (maintainer only)
 
-- **GitHub Pages** – push this folder to a GitHub repo, then in
-  *Settings → Pages* set *Source* to **GitHub Actions**. The workflow in
-  `.github/workflows/deploy.yml` builds and publishes on every push to `main`.
-- **Netlify Drop** – run `npm run build` and drag the `dist` folder onto
-  https://app.netlify.com/drop.
+The site is hosted on GitHub Pages. Every push to `main` builds and publishes it
+automatically via `.github/workflows/deploy.yml` — nothing else to do.
 
-Then open the URL on the phone:
-
-- **Android (Chrome):** menu ⋮ → *Install app* / *Add to Home screen*.
-- **iPhone (Safari):** Share → *Add to Home Screen*.
-
-Note: data is stored in each device's browser storage, so the phone and the
-computer each keep their own separate data. After a deploy that changes
-`public/sw.js`, bump its `VERSION` so installed copies refresh their cache.
+It's an installable Progressive Web App (manifest, icons, service worker in
+`public/sw.js`). After a change to `public/sw.js`, bump its `VERSION` so
+installed copies refresh their cache.

@@ -5,6 +5,7 @@ import { TodayView } from './features/today/TodayView';
 import { PlansView } from './features/plans/PlansView';
 import { BiomarkersView } from './features/biomarkers/BiomarkersView';
 import { StatisticsView } from './features/statistics/StatisticsView';
+import { InstallBanner } from './components/InstallBanner';
 
 type Tab = 'today' | 'plans' | 'biomarkers' | 'statistics';
 
@@ -56,6 +57,7 @@ export function App() {
         ))}
       </nav>
       <main className="main" key={navKey}>
+        <InstallBanner />
         {tab === 'today' && <TodayView now={now} />}
         {tab === 'plans' && <PlansView now={now} />}
         {tab === 'biomarkers' && <BiomarkersView />}
