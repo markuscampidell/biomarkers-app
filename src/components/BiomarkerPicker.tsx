@@ -27,6 +27,9 @@ export function BiomarkerPicker({ biomarkers, onPick, selected, onToggle }: Pick
       <label className="search">
         <Icon name="search" size={18} />
         <input
+          type="search"
+          name="biomarker-picker-search"
+          autoComplete="off"
           autoFocus
           placeholder="Search biomarkers"
           value={query}

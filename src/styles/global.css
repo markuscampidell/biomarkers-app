@@ -968,3 +968,34 @@ input.narrow {
   line-height: 1;
   color: var(--text-3);
 }
+
+/* ---------- Tab swipe ---------- */
+.app {
+  /* Keep vertical scrolling native; horizontal flicks are handled as tab swipes. */
+  touch-action: pan-y pinch-zoom;
+  overflow-x: clip;
+}
+.main.slide-left {
+  animation: slide-from-right 0.22s ease-out;
+}
+.main.slide-right {
+  animation: slide-from-left 0.22s ease-out;
+}
+@keyframes slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+@keyframes slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main.slide-left,
+  .main.slide-right {
+    animation: none;
+  }
+}

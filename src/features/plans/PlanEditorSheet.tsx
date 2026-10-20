@@ -115,7 +115,7 @@ export function PlanEditorSheet({ plan, now, onClose }: Props) {
         <div className="field-label">
           <span>Name</span>
         </div>
-        <input autoFocus={!plan} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Morning routine" />
+        <input autoComplete="off" autoFocus={!plan} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Morning routine" />
       </div>
 
       <label className="toggle-row">

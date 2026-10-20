@@ -63,7 +63,7 @@ export function InfoTypeEditor({ info, onChange, onRemove }: Props) {
         {hasUnit && (
           <label className="field compact">
             <span className="field-label">Unit / variable</span>
-            <input placeholder="kg, mg/dL, hours…" value={info.unit ?? ''} onChange={(e) => set({ unit: e.target.value || undefined })} />
+            <input autoComplete="off" placeholder="kg, mg/dL, hours…" value={info.unit ?? ''} onChange={(e) => set({ unit: e.target.value || undefined })} />
           </label>
         )}
       </div>

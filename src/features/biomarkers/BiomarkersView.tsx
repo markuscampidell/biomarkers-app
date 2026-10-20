@@ -29,7 +29,7 @@ export function BiomarkersView() {
 
       <label className="search">
         <Icon name="search" size={18} />
-        <input placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input type="search" name="biomarker-search" autoComplete="off" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
 
       {list.length === 0 ? (

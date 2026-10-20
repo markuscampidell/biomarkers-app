@@ -61,14 +61,14 @@ export function BiomarkerEditorSheet({ biomarker, onClose }: { biomarker?: Bioma
         <div className="field-label">
           <span>Name</span>
         </div>
-        <input autoFocus={!biomarker} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vitamin D" />
+        <input autoComplete="off" autoFocus={!biomarker} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vitamin D" />
       </div>
       <div className="field">
         <div className="field-label">
           <span>Description</span>
           <span className="muted small">optional</span>
         </div>
-        <input value={description} onChange={(e) => setDescription(e.target.value)} />
+        <input autoComplete="off" value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
 
       <div className="section-title">

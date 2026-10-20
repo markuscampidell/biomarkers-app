@@ -100,7 +100,7 @@ export function LogEntrySheet({ biomarker, entry, planItemId, now, onClose, onBa
           <span>Note</span>
           <span className="muted small">optional</span>
         </div>
-        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything worth remembering" />
+        <input autoComplete="off" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything worth remembering" />
       </div>
     </Sheet>
   );
