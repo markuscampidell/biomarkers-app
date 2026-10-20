@@ -1,6 +1,6 @@
 // Offline support: the app shell is cached so the installed app opens without a connection.
 // Bump VERSION to force clients to drop old caches after a deploy.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `biomarkers-${VERSION}`;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
@@ -24,7 +24,8 @@ self.addEventListener('fetch', (event) => {
   // Pages: network first (so updates arrive), fall back to the cached shell when offline.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
+      // no-cache: always ask the server, so a new deploy shows up on the next app launch.
+      fetch(req.url, { cache: 'no-cache' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put('./index.html', copy));
