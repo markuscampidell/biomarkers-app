@@ -1,6 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import type { Biomarker } from '../domain/types';
-import { CATEGORIES, OTHER_CATEGORY } from '../domain/presets';
+import { CATEGORIES, OTHER_CATEGORY, PRESETS } from '../domain/presets';
+
+// Catalogue order inside a section (most common first); the user's own biomarkers follow alphabetically.
+const presetRank = new Map(PRESETS.map((p, i) => [p.name.toLowerCase(), i]));
+const itemRank = (b: Biomarker) => presetRank.get(b.name.trim().toLowerCase()) ?? Infinity;
 import { Icon } from './Icon';
 
 /** Section name a biomarker is listed under. */
@@ -19,7 +23,7 @@ export function groupBiomarkers(list: Biomarker[]): [string, Biomarker[]][] {
   };
   return [...groups.entries()]
     .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
-    .map(([c, items]) => [c, items.sort((x, y) => x.name.localeCompare(y.name))]);
+    .map(([c, items]) => [c, items.sort((x, y) => itemRank(x) - itemRank(y) || x.name.localeCompare(y.name))]);
 }
 
 interface Props {
