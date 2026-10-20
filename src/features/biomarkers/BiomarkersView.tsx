@@ -5,6 +5,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
 import { InfoChips } from '../../components/InfoChips';
 import { BiomarkerEditorSheet } from './BiomarkerEditorSheet';
+import { BiomarkerGroups } from '../../components/BiomarkerGroups';
 
 export function BiomarkersView() {
   const { data } = useStore();
@@ -13,9 +14,9 @@ export function BiomarkersView() {
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return data.biomarkers
-      .filter((b) => !q || b.name.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return data.biomarkers.filter(
+      (b) => !q || b.name.toLowerCase().includes(q) || (b.category ?? '').toLowerCase().includes(q),
+    );
   }, [data.biomarkers, query]);
 
   return (
@@ -35,20 +36,20 @@ export function BiomarkersView() {
       {list.length === 0 ? (
         <EmptyState title={query ? 'No matches' : 'No biomarkers yet'} />
       ) : (
-        <ul className="list">
-          {list.map((b) => (
-            <li key={b.id}>
-              <button className="card card-btn" onClick={() => setEditing(b)}>
-                <div className="card-main">
-                  <strong>{b.name}</strong>
-                  {b.description && <span className="muted small">{b.description}</span>}
-                  <InfoChips infoTypes={b.infoTypes} />
-                </div>
-                <Icon name="chevron" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <BiomarkerGroups
+          biomarkers={list}
+          searching={query.trim() !== ''}
+          renderItem={(b) => (
+            <button className="card card-btn" onClick={() => setEditing(b)}>
+              <div className="card-main">
+                <strong>{b.name}</strong>
+                {b.description && <span className="muted small">{b.description}</span>}
+                <InfoChips infoTypes={b.infoTypes} />
+              </div>
+              <Icon name="chevron" />
+            </button>
+          )}
+        />
       )}
 
       {editing && (

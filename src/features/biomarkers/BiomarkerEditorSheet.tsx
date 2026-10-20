@@ -5,6 +5,7 @@ import { Sheet } from '../../components/Sheet';
 import { Icon } from '../../components/Icon';
 import { newId } from '../../lib/id';
 import { InfoTypeEditor } from './InfoTypeEditor';
+import { CATEGORIES } from '../../domain/presets';
 
 const blankInfo = (label = ''): InfoType => ({ id: newId(), label, kind: 'number' });
 
@@ -12,6 +13,8 @@ export function BiomarkerEditorSheet({ biomarker, onClose }: { biomarker?: Bioma
   const { data, dispatch } = useStore();
   const [name, setName] = useState(biomarker?.name ?? '');
   const [description, setDescription] = useState(biomarker?.description ?? '');
+  const [category, setCategory] = useState(biomarker?.category ?? '');
+  const categoryOptions = [...new Set([...CATEGORIES, ...data.biomarkers.map((b) => b.category ?? '').filter(Boolean)])];
   const [infoTypes, setInfoTypes] = useState<InfoType[]>(biomarker?.infoTypes ?? [blankInfo('Value')]);
 
   const entryCount = biomarker ? data.entries.filter((e) => e.biomarkerId === biomarker.id).length : 0;
@@ -24,6 +27,7 @@ export function BiomarkerEditorSheet({ biomarker, onClose }: { biomarker?: Bioma
         id: biomarker?.id ?? newId(),
         name: name.trim(),
         description: description.trim() || undefined,
+        category: category.trim() || undefined,
         infoTypes: infoTypes.map((i) => ({ ...i, label: i.label.trim() })),
         createdAt: biomarker?.createdAt ?? new Date().toISOString(),
       },
@@ -69,6 +73,25 @@ export function BiomarkerEditorSheet({ biomarker, onClose }: { biomarker?: Bioma
           <span className="muted small">optional</span>
         </div>
         <input autoComplete="off" value={description} onChange={(e) => setDescription(e.target.value)} />
+      </div>
+
+      <div className="field">
+        <div className="field-label">
+          <span>Section</span>
+          <span className="muted small">pick one or type a new one</span>
+        </div>
+        <input
+          autoComplete="off"
+          list="biomarker-sections"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="e.g. Sleep"
+        />
+        <datalist id="biomarker-sections">
+          {categoryOptions.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </div>
 
       <div className="section-title">

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { Biomarker, ID } from '../domain/types';
 import { Icon } from './Icon';
 import { InfoChips } from './InfoChips';
+import { BiomarkerGroups } from './BiomarkerGroups';
 
 interface PickerProps {
   biomarkers: Biomarker[];
@@ -17,9 +18,9 @@ export function BiomarkerPicker({ biomarkers, onPick, selected, onToggle }: Pick
   const [query, setQuery] = useState('');
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return biomarkers
-      .filter((b) => !q || b.name.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return biomarkers.filter(
+      (b) => !q || b.name.toLowerCase().includes(q) || (b.category ?? '').toLowerCase().includes(q),
+    );
   }, [biomarkers, query]);
 
   return (
@@ -36,11 +37,19 @@ export function BiomarkerPicker({ biomarkers, onPick, selected, onToggle }: Pick
           onChange={(e) => setQuery(e.target.value)}
         />
       </label>
-      <ul className="list">
-        {list.map((b) => {
-          const isSel = selected?.has(b.id);
-          return (
-            <li key={b.id}>
+      {list.length === 0 ? (
+        <p className="muted pad">No biomarkers match “{query}”.</p>
+      ) : (
+        <BiomarkerGroups
+          biomarkers={list}
+          searching={query.trim() !== ''}
+          badge={selected ? (items) => {
+            const n = items.filter((b) => selected.has(b.id)).length;
+            return n ? `${n} selected` : null;
+          } : undefined}
+          renderItem={(b) => {
+            const isSel = selected?.has(b.id);
+            return (
               <button
                 className={`card card-btn ${isSel ? 'selected' : ''}`}
                 onClick={() => (onToggle ? onToggle(b) : onPick?.(b))}
@@ -56,11 +65,10 @@ export function BiomarkerPicker({ biomarkers, onPick, selected, onToggle }: Pick
                   <Icon name="chevron" />
                 )}
               </button>
-            </li>
-          );
-        })}
-        {list.length === 0 && <li className="muted pad">No biomarkers match “{query}”.</li>}
-      </ul>
+            );
+          }}
+        />
+      )}
     </div>
   );
 }

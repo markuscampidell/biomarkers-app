@@ -1,5 +1,5 @@
 import type { InfoType, InfoValue } from '../domain/types';
-import { describeOptimal, isRange } from '../domain/values';
+import { describeOptimal, formatTime, formatValue, isRange, parseTime } from '../domain/values';
 
 interface Props {
   info: InfoType;
@@ -48,7 +48,7 @@ export function ValueInput({ info, value, onChange }: Props) {
             value={v}
             onChange={(e) => onChange(Number(e.target.value))}
           />
-          <span className="scale-value">{v}</span>
+          <span className={`scale-value${info.labels ? ' wide' : ''}`}>{formatValue({ ...info, unit: undefined }, v)}</span>
           {unit}
         </div>
       );
@@ -95,6 +95,37 @@ export function ValueInput({ info, value, onChange }: Props) {
               Use optimal
             </button>
           )}
+        </div>
+      );
+      break;
+    case 'time':
+      control = (
+        <div className="input-row">
+          <input
+            type="time"
+            value={typeof value === 'number' ? formatTime(value) : ''}
+            onChange={(e) => onChange(parseTime(e.target.value, info.overnight))}
+          />
+        </div>
+      );
+      break;
+    case 'yesno':
+      control = (
+        <div className="segmented" role="group" aria-label={info.label}>
+          {[
+            { v: 1, label: 'Yes' },
+            { v: 0, label: 'No' },
+          ].map((o) => (
+            <button
+              key={o.v}
+              type="button"
+              className={value === o.v ? 'on' : ''}
+              aria-pressed={value === o.v}
+              onClick={() => onChange(o.v)}
+            >
+              {o.label}
+            </button>
+          ))}
         </div>
       );
       break;

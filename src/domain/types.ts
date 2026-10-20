@@ -11,7 +11,11 @@ export type DayKey = string;
 /** "HH:MM" in 24h local time. */
 export type TimeOfDay = string;
 
-export type InfoKind = 'number' | 'scale' | 'range' | 'color' | 'text';
+/**
+ * - time: a clock time, stored as hours since midnight (23.5 = 23:30).
+ * - yesno: stored as 1 (yes) or 0 (no).
+ */
+export type InfoKind = 'number' | 'scale' | 'range' | 'color' | 'text' | 'time' | 'yesno';
 
 /** What "good" looks like for an info type. All fields optional. */
 export interface Optimal {
@@ -35,6 +39,13 @@ export interface InfoType {
   min?: number;
   max?: number;
   step?: number;
+  /** Optional names for each step of a `scale`, from min upwards (e.g. None, Light, Medium, Heavy). */
+  labels?: string[];
+  /**
+   * For `time`: the value usually falls around midnight (e.g. bedtime). Times before noon are then
+   * stored as 24+ hours so 23:30 → 00:30 charts as a small step, not a jump.
+   */
+  overnight?: boolean;
   optimal?: Optimal;
 }
 
@@ -42,6 +53,8 @@ export interface Biomarker {
   id: ID;
   name: string;
   description?: string;
+  /** Section the biomarker is listed under, e.g. "Sleep". */
+  category?: string;
   infoTypes: InfoType[];
   createdAt: string;
 }
@@ -95,4 +108,4 @@ export interface AppData {
   entries: Entry[];
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;

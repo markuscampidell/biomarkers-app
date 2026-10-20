@@ -66,29 +66,54 @@ function InfoStats({ info, biomarker, entries }: { info: InfoType; biomarker: Bi
   const avg = averageCloseness(biomarker, withValue, info);
   const optimal = describeOptimal(info);
   const t = (e: Entry) => new Date(e.timestamp).getTime();
-  const fmt = (v: number) => formatValue({ ...info, unit: undefined }, v);
+  // Axis/tile formatting; yes/no and named scale steps only label whole steps.
+  const fmt = (v: number) =>
+    (info.kind === 'yesno' || info.labels) && !Number.isInteger(v)
+      ? ''
+      : info.kind === 'yesno'
+        ? v === 1 ? 'Yes' : v === 0 ? 'No' : ''
+        : formatValue({ ...info, unit: undefined }, v);
 
   let body;
-  if (info.kind === 'number' || info.kind === 'scale') {
+  if (info.kind === 'number' || info.kind === 'scale' || info.kind === 'time' || info.kind === 'yesno') {
     const pts = withValue.map((e) => ({ t: t(e), v: e.values[info.id] as number }));
     const vals = pts.map((p) => p.v);
     const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
     const first = vals[0];
     const last = vals[vals.length - 1];
+    const diff = last - first;
+    // Time differences read as "+0:45", not as a clock time.
+    const change =
+      info.kind === 'time'
+        ? `${diff >= 0 ? '+' : '−'}${Math.floor(Math.abs(diff))}:${String(Math.round((Math.abs(diff) % 1) * 60)).padStart(2, '0')} h`
+        : `${diff >= 0 ? '+' : ''}${fmt(+diff.toFixed(2))}`;
+    const yes = vals.filter((v) => v >= 0.5).length;
+    const domain: [number, number] | undefined =
+      info.kind === 'yesno'
+        ? [0, 1]
+        : info.kind === 'scale' && info.min !== undefined && info.max !== undefined
+          ? [info.min, info.max]
+          : undefined;
     body = (
       <>
         <div className="tiles">
           <Tile label="Latest" value={formatValue(info, last)} />
-          <Tile label="Average" value={formatValue(info, +mean.toFixed(2))} />
-          <Tile label="Min / Max" value={`${fmt(Math.min(...vals))} / ${fmt(Math.max(...vals))}`} />
-          <Tile label="Change" value={`${last - first >= 0 ? '+' : ''}${fmt(+(last - first).toFixed(2))}`} />
+          {info.kind === 'yesno' ? (
+            <Tile label="Yes" value={`${yes} of ${vals.length} (${Math.round((yes / vals.length) * 100)}%)`} />
+          ) : (
+            <>
+              <Tile label="Average" value={formatValue(info, +mean.toFixed(2))} />
+              <Tile label="Min / Max" value={`${fmt(Math.min(...vals))} / ${fmt(Math.max(...vals))}`} />
+              <Tile label="Change" value={change} />
+            </>
+          )}
         </div>
         <LineChart
           series={[{ name: info.label, color: 'var(--series-1)', points: pts }]}
           band={info.optimal && { min: info.optimal.min, max: info.optimal.max }}
           target={info.optimal?.target}
           format={fmt}
-          yDomain={info.kind === 'scale' && info.min !== undefined && info.max !== undefined ? [info.min, info.max] : undefined}
+          yDomain={domain}
         />
       </>
     );

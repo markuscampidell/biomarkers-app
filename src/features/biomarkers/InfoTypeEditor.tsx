@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { InfoKind, InfoType, Optimal } from '../../domain/types';
-import { KIND_LABELS } from '../../domain/values';
+import { KIND_LABELS, formatTime, parseTime } from '../../domain/values';
 import { Icon } from '../../components/Icon';
 
 type OptimalMode = 'none' | 'target' | 'band';
@@ -118,6 +118,53 @@ export function InfoTypeEditor({ info, onChange, onRemove }: Props) {
           <span className="field-label">Optimal band (optional)</span>
           <BandInputs info={info} setOpt={setOpt} />
         </div>
+      )}
+
+      {info.kind === 'yesno' && (
+        <div className="field compact">
+          <span className="field-label">Optimal</span>
+          <div className="segmented">
+            {([
+              ['None', undefined],
+              ['Yes', 1],
+              ['No', 0],
+            ] as const).map(([label, v]) => (
+              <button
+                key={label}
+                type="button"
+                className={info.optimal?.target === v ? 'on' : ''}
+                onClick={() => set({ optimal: v === undefined ? undefined : { target: v } })}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {info.kind === 'time' && (
+        <>
+          <label className="toggle-row">
+            <span>Usually around midnight (e.g. bedtime)</span>
+            <input type="checkbox" className="switch" checked={!!info.overnight} onChange={(e) => set({ overnight: e.target.checked || undefined })} />
+          </label>
+          <div className="field compact">
+            <span className="field-label">Optimal between (optional)</span>
+            <div className="input-row">
+              <input
+                type="time"
+                value={info.optimal?.min !== undefined ? formatTime(info.optimal.min) : ''}
+                onChange={(e) => setOpt({ min: parseTime(e.target.value, info.overnight) })}
+              />
+              <span className="muted">–</span>
+              <input
+                type="time"
+                value={info.optimal?.max !== undefined ? formatTime(info.optimal.max) : ''}
+                onChange={(e) => setOpt({ max: parseTime(e.target.value, info.overnight) })}
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {info.kind === 'color' && (
