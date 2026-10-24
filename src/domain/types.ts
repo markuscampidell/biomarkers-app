@@ -108,4 +108,4 @@ export interface AppData {
   entries: Entry[];
 }
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;

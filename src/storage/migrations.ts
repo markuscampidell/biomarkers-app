@@ -1,5 +1,5 @@
 import { SCHEMA_VERSION, type AppData, type Biomarker } from '../domain/types';
-import { PRESETS, REMOVED_PRESET_NAMES, fromPreset } from '../domain/presets';
+import { LEGACY_CATEGORIES, PRESETS, REMOVED_PRESET_NAMES, fromPreset } from '../domain/presets';
 
 /**
  * Upgrades persisted data from older schema versions.
@@ -17,6 +17,7 @@ export function migrate(raw: any): AppData | null {
   if (data.schemaVersion < 2) data = toV2(data);
   if (data.schemaVersion < 3) data = toV3(data);
   if (data.schemaVersion < 4) data = toV4(data);
+  if (data.schemaVersion < 5) data = toV5(data);
 
   if (data.schemaVersion > SCHEMA_VERSION) {
     console.warn('Saved data is from a newer app version; loading as-is.');
@@ -91,4 +92,21 @@ function toV4(data: AppData): AppData {
     entries: data.entries.filter((e) => !removedIds.has(e.biomarkerId)),
     plans: data.plans.map((p) => ({ ...p, items: p.items.filter((i) => !removedIds.has(i.biomarkerId)) })),
   };
+}
+
+/**
+ * v5: sleep metrics and grip strength are removed (not biomarkers), the catalogue gains many new
+ * lab biomarkers, and starter biomarkers are re-filed into the new, finer sections.
+ */
+function toV5(data: AppData): AppData {
+  const removed = toV4(data); // removes the extended REMOVED_PRESET_NAMES list incl. history
+  const presetByName = new Map(PRESETS.map((p) => [key(p.name), p]));
+  const legacy = new Set(LEGACY_CATEGORIES);
+  const biomarkers = removed.biomarkers.map((b) => {
+    const preset = presetByName.get(key(b.name));
+    return preset && (!b.category || legacy.has(b.category)) ? { ...b, category: preset.category } : b;
+  });
+  const have = new Set(biomarkers.map((b) => key(b.name)));
+  const added = PRESETS.filter((p) => !have.has(key(p.name))).map(fromPreset);
+  return { ...removed, schemaVersion: 5, biomarkers: [...biomarkers, ...added] };
 }
