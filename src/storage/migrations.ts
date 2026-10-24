@@ -18,6 +18,7 @@ export function migrate(raw: any): AppData | null {
   if (data.schemaVersion < 3) data = toV3(data);
   if (data.schemaVersion < 4) data = toV4(data);
   if (data.schemaVersion < 5) data = toV5(data);
+  if (data.schemaVersion < 6) data = toV6(data);
 
   if (data.schemaVersion > SCHEMA_VERSION) {
     console.warn('Saved data is from a newer app version; loading as-is.');
@@ -109,4 +110,26 @@ function toV5(data: AppData): AppData {
   const have = new Set(biomarkers.map((b) => key(b.name)));
   const added = PRESETS.filter((p) => !have.has(key(p.name))).map(fromPreset);
   return { ...removed, schemaVersion: 5, biomarkers: [...biomarkers, ...added] };
+}
+
+/**
+ * v6: catalogue biomarkers become read-only defaults. They are flagged `builtin` and reset to the
+ * catalogue's name, description, section and fields (field ids are kept so logged values still match).
+ */
+function toV6(data: AppData): AppData {
+  const presetByName = new Map(PRESETS.map((p) => [key(p.name), p]));
+  const biomarkers = data.biomarkers.map((b): Biomarker => {
+    const preset = presetByName.get(key(b.name));
+    if (!preset) return b;
+    const sameShape = preset.infoTypes.length === b.infoTypes.length;
+    return {
+      ...b,
+      builtin: true,
+      name: preset.name,
+      description: preset.description,
+      category: preset.category,
+      infoTypes: sameShape ? preset.infoTypes.map((seed, i) => ({ ...seed, id: b.infoTypes[i].id })) : b.infoTypes,
+    };
+  });
+  return { ...data, schemaVersion: 6, biomarkers };
 }

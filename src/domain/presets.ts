@@ -10,29 +10,6 @@ export interface PresetSeed {
   infoTypes: InfoSeed[];
 }
 
-/** Sections in display order. Biomarkers in other (user-made) sections are listed after these. */
-export const CATEGORIES = [
-  'Vital signs',
-  'Heart & fitness',
-  'Body composition',
-  'Metabolism',
-  'Lipids',
-  'Blood count',
-  'Iron',
-  'Kidney',
-  'Liver',
-  'Electrolytes & minerals',
-  'Vitamins',
-  'Thyroid',
-  'Hormones',
-  'Inflammation',
-  'Hydration',
-  "Women's health",
-  "Men's health",
-] as const;
-
-export const OTHER_CATEGORY = 'Other';
-
 // Small helper so each preset reads as one line.
 const num = (unit: string, optimal?: InfoSeed['optimal'], label = 'Value'): InfoSeed => ({ label, kind: 'number', unit, optimal });
 
@@ -202,6 +179,7 @@ export function fromPreset(p: PresetSeed): Biomarker {
   return {
     id: newId(),
     name: p.name,
+    builtin: true,
     category: p.category,
     description: p.description,
     infoTypes: p.infoTypes.map((i) => ({ ...i, id: newId() })),

@@ -20,8 +20,11 @@ function upsert<T extends { id: ID }>(list: T[], item: T): T[] {
 export function reducer(state: AppData, action: Action): AppData {
   switch (action.type) {
     case 'biomarker/upsert':
+      // Default biomarkers are read-only.
+      if (state.biomarkers.some((b) => b.id === action.biomarker.id && b.builtin)) return state;
       return { ...state, biomarkers: upsert(state.biomarkers, action.biomarker) };
     case 'biomarker/delete':
+      if (state.biomarkers.some((b) => b.id === action.id && b.builtin)) return state;
       // Removing a biomarker also removes it from plans and drops its history.
       return {
         ...state,

@@ -1099,3 +1099,87 @@ input.narrow {
 .intro ul strong {
   color: var(--text);
 }
+
+/* ---------- Biomarker lists: mine vs. defaults, drag to section ---------- */
+.list-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+.list-heading h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.drop-zone {
+  border-radius: var(--radius);
+  outline: 2px dashed transparent;
+  outline-offset: 4px;
+  transition: outline-color 0.15s;
+}
+.is-dragging .drop-zone {
+  outline-color: var(--border);
+}
+.drop-zone.drop-over {
+  outline-color: var(--info);
+}
+.group {
+  border-radius: var(--radius);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.group.drop-over {
+  background: var(--info-bg);
+  box-shadow: 0 0 0 2px var(--info);
+}
+.card-btn.movable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.card-btn.lifted {
+  opacity: 0.35;
+}
+.is-dragging,
+.is-dragging * {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: grabbing;
+}
+.drag-ghost {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  transform: translate(-50%, -120%);
+  max-width: 70vw;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Read-only default biomarker */
+.readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+.readonly dt {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.readonly dd {
+  margin: 2px 0 0;
+}
+.readonly-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}

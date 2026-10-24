@@ -1,29 +1,26 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import type { Biomarker } from '../domain/types';
-import { CATEGORIES, OTHER_CATEGORY, PRESETS } from '../domain/presets';
-
-// Catalogue order inside a section (most common first); the user's own biomarkers follow alphabetically.
-const presetRank = new Map(PRESETS.map((p, i) => [p.name.toLowerCase(), i]));
-const itemRank = (b: Biomarker) => presetRank.get(b.name.trim().toLowerCase()) ?? Infinity;
 import { Icon } from './Icon';
 
-/** Section name a biomarker is listed under. */
-export const categoryOf = (b: Biomarker) => b.category?.trim() || OTHER_CATEGORY;
+/** Section a biomarker is listed under; '' means it is not in any section. */
+export const categoryOf = (b: Biomarker) => b.category?.trim() ?? '';
 
-/** Known sections first (in their set order), then the user's own alphabetically, "Other" last. */
-export function groupBiomarkers(list: Biomarker[]): [string, Biomarker[]][] {
+const alpha = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true });
+
+/** Sections alphabetically (each with its biomarkers alphabetically), plus biomarkers outside any section. */
+export function groupBiomarkers(list: Biomarker[]): { sections: [string, Biomarker[]][]; loose: Biomarker[] } {
   const groups = new Map<string, Biomarker[]>();
+  const loose: Biomarker[] = [];
   for (const b of list) {
     const c = categoryOf(b);
-    groups.set(c, [...(groups.get(c) ?? []), b]);
+    if (!c) loose.push(b);
+    else groups.set(c, [...(groups.get(c) ?? []), b]);
   }
-  const rank = (c: string) => {
-    const i = (CATEGORIES as readonly string[]).indexOf(c);
-    return i !== -1 ? i : c === OTHER_CATEGORY ? Infinity : CATEGORIES.length;
+  const byName = (x: Biomarker, y: Biomarker) => alpha(x.name, y.name);
+  return {
+    sections: [...groups.entries()].sort(([a], [b]) => alpha(a, b)).map(([c, items]) => [c, items.sort(byName)]),
+    loose: loose.sort(byName),
   };
-  return [...groups.entries()]
-    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
-    .map(([c, items]) => [c, items.sort((x, y) => itemRank(x) - itemRank(y) || x.name.localeCompare(y.name))]);
 }
 
 interface Props {
@@ -33,12 +30,16 @@ interface Props {
   renderItem: (b: Biomarker) => ReactNode;
   /** Optional extra text next to a section's count, e.g. "2 selected". */
   badge?: (items: Biomarker[]) => string | null;
+  /** Mark sections as drop targets for dragging biomarkers (see useDragToSection). */
+  droppable?: boolean;
+  /** Section currently hovered while dragging. */
+  dropOver?: string | null;
 }
 
-/** Biomarkers split into sections that open and close like chapters. All start closed. */
-export function BiomarkerGroups({ biomarkers, searching, renderItem, badge }: Props) {
+/** Sections that open and close like folders (all start closed), then biomarkers outside any section. */
+export function BiomarkerGroups({ biomarkers, searching, renderItem, badge, droppable, dropOver }: Props) {
   const [open, setOpen] = useState<Set<string>>(() => new Set());
-  const groups = useMemo(() => groupBiomarkers(biomarkers), [biomarkers]);
+  const { sections, loose } = useMemo(() => groupBiomarkers(biomarkers), [biomarkers]);
 
   const toggle = (c: string) =>
     setOpen((prev) => {
@@ -50,11 +51,15 @@ export function BiomarkerGroups({ biomarkers, searching, renderItem, badge }: Pr
 
   return (
     <div className="groups">
-      {groups.map(([category, items]) => {
+      {sections.map(([category, items]) => {
         const isOpen = searching || open.has(category);
         const extra = badge?.(items);
         return (
-          <section key={category} className={`group ${isOpen ? 'open' : ''}`}>
+          <section
+            key={category}
+            className={`group ${isOpen ? 'open' : ''} ${dropOver === category ? 'drop-over' : ''}`}
+            data-drop={droppable ? category : undefined}
+          >
             <button
               type="button"
               className="group-head"
@@ -78,6 +83,13 @@ export function BiomarkerGroups({ biomarkers, searching, renderItem, badge }: Pr
           </section>
         );
       })}
+      {loose.length > 0 && (
+        <ul className="list">
+          {loose.map((b) => (
+            <li key={b.id}>{renderItem(b)}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

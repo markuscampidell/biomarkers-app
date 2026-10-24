@@ -5,7 +5,6 @@ import { Sheet } from '../../components/Sheet';
 import { Icon } from '../../components/Icon';
 import { newId } from '../../lib/id';
 import { InfoTypeEditor } from './InfoTypeEditor';
-import { CATEGORIES } from '../../domain/presets';
 
 const blankInfo = (label = ''): InfoType => ({ id: newId(), label, kind: 'number' });
 
@@ -14,7 +13,10 @@ export function BiomarkerEditorSheet({ biomarker, onClose }: { biomarker?: Bioma
   const [name, setName] = useState(biomarker?.name ?? '');
   const [description, setDescription] = useState(biomarker?.description ?? '');
   const [category, setCategory] = useState(biomarker?.category ?? '');
-  const categoryOptions = [...new Set([...CATEGORIES, ...data.biomarkers.map((b) => b.category ?? '').filter(Boolean)])];
+  // Only sections of your own biomarkers: defaults and your biomarkers are kept apart.
+  const categoryOptions = [
+    ...new Set(data.biomarkers.filter((b) => !b.builtin).map((b) => b.category?.trim() ?? '').filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b));
   const [infoTypes, setInfoTypes] = useState<InfoType[]>(biomarker?.infoTypes ?? [blankInfo('Value')]);
 
   const entryCount = biomarker ? data.entries.filter((e) => e.biomarkerId === biomarker.id).length : 0;
@@ -78,14 +80,14 @@ export function BiomarkerEditorSheet({ biomarker, onClose }: { biomarker?: Bioma
       <div className="field">
         <div className="field-label">
           <span>Section</span>
-          <span className="muted small">pick one or type a new one</span>
+          <span className="muted small">optional · leave empty for no section</span>
         </div>
         <input
           autoComplete="off"
           list="biomarker-sections"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          placeholder="e.g. Sleep"
+          placeholder="No section"
         />
         <datalist id="biomarker-sections">
           {categoryOptions.map((c) => (

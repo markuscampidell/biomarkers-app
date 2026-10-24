@@ -53,8 +53,10 @@ export interface Biomarker {
   id: ID;
   name: string;
   description?: string;
-  /** Section the biomarker is listed under, e.g. "Sleep". */
+  /** Section the biomarker is listed under, e.g. "Lipids". Empty = not in any section. */
   category?: string;
+  /** Part of the built-in catalogue: shown read-only and cannot be deleted. */
+  builtin?: boolean;
   infoTypes: InfoType[];
   createdAt: string;
 }
@@ -108,4 +110,4 @@ export interface AppData {
   entries: Entry[];
 }
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
