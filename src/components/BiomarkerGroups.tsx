@@ -34,10 +34,12 @@ interface Props {
   droppable?: boolean;
   /** Section currently hovered while dragging. */
   dropOver?: string | null;
+  /** When set, each section header gets an × button that calls this. */
+  onDeleteSection?: (category: string, items: Biomarker[]) => void;
 }
 
 /** Sections that open and close like folders (all start closed), then biomarkers outside any section. */
-export function BiomarkerGroups({ biomarkers, searching, renderItem, badge, droppable, dropOver }: Props) {
+export function BiomarkerGroups({ biomarkers, searching, renderItem, badge, droppable, dropOver, onDeleteSection }: Props) {
   const [open, setOpen] = useState<Set<string>>(() => new Set());
   const { sections, loose } = useMemo(() => groupBiomarkers(biomarkers), [biomarkers]);
 
@@ -60,19 +62,31 @@ export function BiomarkerGroups({ biomarkers, searching, renderItem, badge, drop
             className={`group ${isOpen ? 'open' : ''} ${dropOver === category ? 'drop-over' : ''}`}
             data-drop={droppable ? category : undefined}
           >
-            <button
-              type="button"
-              className="group-head"
-              aria-expanded={isOpen}
-              onClick={() => !searching && toggle(category)}
-            >
-              <span className="group-chevron">
-                <Icon name="chevron" size={18} />
-              </span>
-              <span className="group-title">{category}</span>
-              {extra && <span className="badge good">{extra}</span>}
-              <span className="group-count">{items.length}</span>
-            </button>
+            <div className="with-x">
+              <button
+                type="button"
+                className={`group-head ${onDeleteSection ? 'has-x' : ''}`}
+                aria-expanded={isOpen}
+                onClick={() => !searching && toggle(category)}
+              >
+                <span className="group-chevron">
+                  <Icon name="chevron" size={18} />
+                </span>
+                <span className="group-title">{category}</span>
+                {extra && <span className="badge good">{extra}</span>}
+                <span className="group-count">{items.length}</span>
+              </button>
+              {onDeleteSection && (
+                <button
+                  type="button"
+                  className="icon-btn x-btn"
+                  aria-label={`Delete section ${category}`}
+                  onClick={() => onDeleteSection(category, items)}
+                >
+                  <Icon name="close" size={18} />
+                </button>
+              )}
+            </div>
             {isOpen && (
               <ul className="list group-body">
                 {items.map((b) => (

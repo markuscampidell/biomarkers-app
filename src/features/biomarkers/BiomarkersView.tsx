@@ -32,20 +32,51 @@ export function BiomarkersView() {
   });
 
   const searching = query.trim() !== '';
-  const renderCard = (b: Biomarker, movable: boolean) => (
-    <button
-      className={`card card-btn ${movable ? 'movable' : ''} ${drag?.id === b.id ? 'lifted' : ''}`}
-      onClick={() => setEditing(b)}
-      {...(movable ? handle(b.id, b.name) : {})}
-    >
-      <div className="card-main">
-        <strong>{b.name}</strong>
-        {b.description && <span className="muted small">{b.description}</span>}
-        <InfoChips infoTypes={b.infoTypes} />
+  const dragged = drag ? data.biomarkers.find((b) => b.id === drag.id) : undefined;
+  const draggedInSection = !!dragged && categoryOf(dragged) !== '';
+  const entriesOf = (ids: Set<string>) => data.entries.filter((e) => ids.has(e.biomarkerId)).length;
+  const entriesNote = (n: number) => (n > 0 ? ` This also deletes ${n} logged entr${n === 1 ? 'y' : 'ies'}.` : '');
+
+  const deleteBiomarker = (b: Biomarker) => {
+    if (confirm(`Delete “${b.name}”?${entriesNote(entriesOf(new Set([b.id])))}`)) {
+      dispatch({ type: 'biomarker/delete', id: b.id });
+    }
+  };
+
+  const deleteSection = (category: string, items: Biomarker[]) => {
+    const n = items.length;
+    const ids = new Set(items.map((b) => b.id));
+    const what = `the section “${category}” and its ${n === 1 ? 'biomarker' : `${n} biomarkers`}`;
+    if (confirm(`Delete ${what}?${entriesNote(entriesOf(ids))}`)) {
+      dispatch({ type: 'biomarker/deleteMany', ids: [...ids] });
+    }
+  };
+
+  const renderCard = (b: Biomarker, mine: boolean) => {
+    const card = (
+      <button
+        className={`card card-btn ${mine ? 'movable has-x' : ''} ${drag?.id === b.id ? 'lifted' : ''}`}
+        onClick={() => setEditing(b)}
+        {...(mine ? handle(b.id, b.name) : {})}
+      >
+        <div className="card-main">
+          <strong>{b.name}</strong>
+          {b.description && <span className="muted small">{b.description}</span>}
+          <InfoChips infoTypes={b.infoTypes} />
+        </div>
+        {!mine && <Icon name="chevron" />}
+      </button>
+    );
+    if (!mine) return card;
+    return (
+      <div className="with-x">
+        {card}
+        <button className="icon-btn x-btn" aria-label={`Delete ${b.name}`} onClick={() => deleteBiomarker(b)}>
+          <Icon name="close" size={18} />
+        </button>
       </div>
-      <Icon name="chevron" />
-    </button>
-  );
+    );
+  };
 
   return (
     <section className="view">
@@ -89,8 +120,12 @@ export function BiomarkersView() {
             searching={searching}
             droppable
             dropOver={drag?.over}
+            onDeleteSection={deleteSection}
             renderItem={(b) => renderCard(b, true)}
           />
+        )}
+        {draggedInSection && (
+          <div className={`drop-outside ${drag?.over === '' ? 'over' : ''}`}>Drop here to take it out of the section</div>
         )}
       </div>
 

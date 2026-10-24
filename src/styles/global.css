@@ -1183,3 +1183,38 @@ input.narrow {
   flex-direction: column;
   gap: 3px;
 }
+.drop-outside {
+  margin-top: 8px;
+  padding: 18px 16px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-2);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.drop-outside.over {
+  border-color: var(--info);
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+/* × delete button on the right of your own biomarkers and sections */
+.with-x {
+  position: relative;
+}
+.card-btn.has-x,
+.group-head.has-x {
+  padding-right: 52px;
+}
+.x-btn {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  color: var(--text-3);
+}
+.x-btn:hover {
+  color: var(--critical);
+  background: var(--critical-bg);
+}

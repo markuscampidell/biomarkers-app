@@ -3,6 +3,7 @@ import type { AppData, Biomarker, Entry, ID, Plan } from '../domain/types';
 export type Action =
   | { type: 'biomarker/upsert'; biomarker: Biomarker }
   | { type: 'biomarker/delete'; id: ID }
+  | { type: 'biomarker/deleteMany'; ids: ID[] }
   | { type: 'plan/upsert'; plan: Plan }
   | { type: 'plan/delete'; id: ID }
   | { type: 'entry/upsert'; entry: Entry }
@@ -24,14 +25,9 @@ export function reducer(state: AppData, action: Action): AppData {
       if (state.biomarkers.some((b) => b.id === action.biomarker.id && b.builtin)) return state;
       return { ...state, biomarkers: upsert(state.biomarkers, action.biomarker) };
     case 'biomarker/delete':
-      if (state.biomarkers.some((b) => b.id === action.id && b.builtin)) return state;
-      // Removing a biomarker also removes it from plans and drops its history.
-      return {
-        ...state,
-        biomarkers: state.biomarkers.filter((b) => b.id !== action.id),
-        plans: state.plans.map((p) => ({ ...p, items: p.items.filter((i) => i.biomarkerId !== action.id) })),
-        entries: state.entries.filter((e) => e.biomarkerId !== action.id),
-      };
+      return deleteBiomarkers(state, [action.id]);
+    case 'biomarker/deleteMany':
+      return deleteBiomarkers(state, action.ids);
     case 'plan/upsert':
       return { ...state, plans: upsert(state.plans, action.plan) };
     case 'plan/delete':
@@ -43,4 +39,16 @@ export function reducer(state: AppData, action: Action): AppData {
     case 'data/replace':
       return action.data;
   }
+}
+
+/** Removing biomarkers also removes them from plans and drops their history. Defaults are kept. */
+function deleteBiomarkers(state: AppData, ids: ID[]): AppData {
+  const gone = new Set(state.biomarkers.filter((b) => ids.includes(b.id) && !b.builtin).map((b) => b.id));
+  if (gone.size === 0) return state;
+  return {
+    ...state,
+    biomarkers: state.biomarkers.filter((b) => !gone.has(b.id)),
+    plans: state.plans.map((p) => ({ ...p, items: p.items.filter((i) => !gone.has(i.biomarkerId)) })),
+    entries: state.entries.filter((e) => !gone.has(e.biomarkerId)),
+  };
 }
