@@ -16,6 +16,7 @@ export function migrate(raw: any): AppData | null {
 
   if (data.schemaVersion < 2) data = toV2(data);
   if (data.schemaVersion < 3) data = toV3(data);
+  if (data.schemaVersion < 4) data = toV4(data);
 
   if (data.schemaVersion > SCHEMA_VERSION) {
     console.warn('Saved data is from a newer app version; loading as-is.');
@@ -74,4 +75,20 @@ function toV3(data: AppData): AppData {
       b.category === 'Hydration & Digestion' && !removed.has(key(b.name)) ? { ...b, category: 'Hydration' } : b,
     );
   return { ...data, schemaVersion: 3, biomarkers };
+}
+
+/**
+ * v4: non-biomarkers that v3 kept because they had history are removed too, together with their
+ * logged entries and plan items, so only real biomarkers remain.
+ */
+function toV4(data: AppData): AppData {
+  const removedNames = new Set(REMOVED_PRESET_NAMES.map(key));
+  const removedIds = new Set(data.biomarkers.filter((b) => removedNames.has(key(b.name))).map((b) => b.id));
+  return {
+    ...data,
+    schemaVersion: 4,
+    biomarkers: data.biomarkers.filter((b) => !removedIds.has(b.id)),
+    entries: data.entries.filter((e) => !removedIds.has(e.biomarkerId)),
+    plans: data.plans.map((p) => ({ ...p, items: p.items.filter((i) => !removedIds.has(i.biomarkerId)) })),
+  };
 }
