@@ -6,11 +6,13 @@ import { Icon } from '../../components/Icon';
 import { InfoChips } from '../../components/InfoChips';
 import { BiomarkerEditorSheet } from './BiomarkerEditorSheet';
 import { BiomarkerGroups } from '../../components/BiomarkerGroups';
+import { BiomarkerIntro, isFirstBiomarkersVisit } from './BiomarkerIntro';
 
 export function BiomarkersView() {
   const { data } = useStore();
   const [editing, setEditing] = useState<Biomarker | 'new' | null>(null);
   const [query, setQuery] = useState('');
+  const [introOpen, setIntroOpen] = useState(isFirstBiomarkersVisit);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -23,10 +25,23 @@ export function BiomarkersView() {
     <section className="view">
       <header className="view-header">
         <h1>Biomarkers</h1>
-        <button className="btn primary" onClick={() => setEditing('new')}>
-          <Icon name="plus" /> New
-        </button>
+        <div className="header-actions">
+          <button
+            className={'icon-btn' + (introOpen ? ' active' : '')}
+            onClick={() => setIntroOpen((o) => !o)}
+            aria-label={introOpen ? 'Hide explanation' : 'What is a biomarker?'}
+            aria-expanded={introOpen}
+            title="What is a biomarker?"
+          >
+            <Icon name="info" size={22} />
+          </button>
+          <button className="btn primary" onClick={() => setEditing('new')}>
+            <Icon name="plus" /> New
+          </button>
+        </div>
       </header>
+
+      {introOpen && <BiomarkerIntro onClose={() => setIntroOpen(false)} />}
 
       <label className="search">
         <Icon name="search" size={18} />

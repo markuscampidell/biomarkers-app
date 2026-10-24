@@ -16,10 +16,7 @@ export const CATEGORIES = [
   'Heart & Circulation',
   'Blood',
   'Body',
-  'Nutrition',
-  'Hydration & Digestion',
-  'Mind & Mood',
-  'Symptoms & Wellbeing',
+  'Hydration',
   "Women's health",
 ] as const;
 
@@ -27,15 +24,6 @@ export const OTHER_CATEGORY = 'Other';
 
 // Small helpers so each preset reads as one line.
 const num = (unit: string, optimal?: InfoSeed['optimal'], label = 'Value'): InfoSeed => ({ label, kind: 'number', unit, optimal });
-const scale = (min: number, max: number, optimal?: InfoSeed['optimal'], label = 'Rating'): InfoSeed => ({
-  label,
-  kind: 'scale',
-  min,
-  max,
-  step: 1,
-  optimal,
-});
-const time = (overnight = false): InfoSeed => ({ label: 'Time', kind: 'time', ...(overnight && { overnight }) });
 
 // General adult reference ranges, used only to colour how close a value is. Ranges that depend
 // strongly on sex or age (ferritin, hemoglobin, testosterone, …) are left without an optimal.
@@ -45,22 +33,21 @@ const S = 'Sleep';
 const H = 'Heart & Circulation';
 const B = 'Blood';
 const BO = 'Body';
-const N = 'Nutrition';
-const D = 'Hydration & Digestion';
-const M = 'Mind & Mood';
-const W = 'Symptoms & Wellbeing';
+const D = 'Hydration';
 const F = "Women's health";
 
+/**
+ * Only real biomarkers: objectively measurable characteristics of the body that indicate a normal
+ * biological process, a disease process or a response to an intervention (NIH/FDA BEST definition).
+ * Subjective ratings (mood, pain, …), behaviours (bedtime, meditation, …) and intake (calories,
+ * water, …) are not biomarkers and are deliberately not in this list.
+ */
 export const PRESETS: PresetSeed[] = [
   // Sleep
   { category: S, name: 'Sleep duration', infoTypes: [num('h', { min: 7, max: 9 }, 'Duration')] },
-  { category: S, name: 'Sleep quality', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: S, name: 'Bedtime', infoTypes: [time(true)] },
-  { category: S, name: 'Wake-up time', infoTypes: [time()] },
   { category: S, name: 'Time to fall asleep', infoTypes: [num('min', { max: 20 }, 'Minutes')] },
   { category: S, name: 'Deep sleep', infoTypes: [num('min', undefined, 'Minutes')] },
   { category: S, name: 'REM sleep', infoTypes: [num('min', undefined, 'Minutes')] },
-  { category: S, name: 'Feeling rested', description: 'How rested you feel after waking up.', infoTypes: [scale(1, 10, { min: 7 })] },
 
   // Heart & Circulation
   { category: H, name: 'Resting heart rate', infoTypes: [num('bpm', { min: 50, max: 70 }, 'Heart rate')] },
@@ -119,55 +106,10 @@ export const PRESETS: PresetSeed[] = [
   { category: BO, name: 'Body temperature', infoTypes: [num('°C', { min: 36.1, max: 37.2 }, 'Temperature')] },
   { category: BO, name: 'Grip strength', infoTypes: [num('kg', undefined, 'Grip strength')] },
 
-  // Nutrition
-  { category: N, name: 'Calories', infoTypes: [num('kcal', undefined, 'Calories')] },
-  { category: N, name: 'Protein', infoTypes: [num('g', undefined, 'Protein')] },
-  { category: N, name: 'Carbs', infoTypes: [num('g', undefined, 'Carbs')] },
-  { category: N, name: 'Fat', infoTypes: [num('g', undefined, 'Fat')] },
-  { category: N, name: 'Fiber', infoTypes: [num('g', { min: 25 }, 'Fiber')] },
-  { category: N, name: 'Sugar', infoTypes: [num('g', { max: 50 }, 'Sugar')] },
-  { category: N, name: 'Water intake', infoTypes: [num('L', { min: 2 }, 'Water')] },
-
-  // Hydration & Digestion
+  // Hydration
   { category: D, name: 'Urine color', infoTypes: [{ label: 'Color', kind: 'color', optimal: { color: '#f3e7a1' } }] },
-  { category: D, name: 'Bowel movements', infoTypes: [num('per day', undefined, 'Count')] },
-  {
-    category: D,
-    name: 'Stool type (Bristol scale)',
-    description: '1 = hard lumps … 4 = smooth and soft … 7 = watery.',
-    infoTypes: [scale(1, 7, { min: 3, max: 4 }, 'Type')],
-  },
-  { category: D, name: 'Bloating', infoTypes: [scale(0, 10, { max: 2 })] },
-  { category: D, name: 'Heartburn', infoTypes: [scale(0, 10, { max: 2 })] },
-
-  // Mind & Mood
-  { category: M, name: 'Mood', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: M, name: 'Energy', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: M, name: 'Stress', infoTypes: [scale(1, 10, { max: 3 })] },
-  { category: M, name: 'Anxiety', infoTypes: [scale(1, 10, { max: 3 })] },
-  { category: M, name: 'Focus', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: M, name: 'Motivation', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: M, name: 'Productivity', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: M, name: 'Meditation', infoTypes: [num('min', undefined, 'Minutes')] },
-  { category: M, name: 'Journal', description: 'Gratitude, thoughts, anything worth writing down.', infoTypes: [{ label: 'Notes', kind: 'text' }] },
-
-  // Symptoms & Wellbeing
-  { category: W, name: 'Headache', infoTypes: [scale(0, 10, { max: 1 }, 'Intensity')] },
-  { category: W, name: 'Pain level', infoTypes: [scale(0, 10, { max: 1 }, 'Intensity')] },
-  { category: W, name: 'Muscle soreness', infoTypes: [scale(0, 10, { max: 2 }, 'Intensity')] },
-  { category: W, name: 'Allergy symptoms', infoTypes: [scale(0, 10, { max: 1 }, 'Intensity')] },
-  { category: W, name: 'Sick', infoTypes: [{ label: 'Sick', kind: 'yesno', optimal: { target: 0 } }] },
-  { category: W, name: 'Skin condition', infoTypes: [scale(1, 10, { min: 7 })] },
-  { category: W, name: 'Libido', infoTypes: [scale(1, 10)] },
 
   // Women's health
-  { category: F, name: 'Cycle day', infoTypes: [num('day', undefined, 'Day of cycle')] },
-  {
-    category: F,
-    name: 'Period flow',
-    infoTypes: [{ label: 'Flow', kind: 'scale', min: 0, max: 3, step: 1, labels: ['None', 'Light', 'Medium', 'Heavy'] }],
-  },
-  { category: F, name: 'Cramps', infoTypes: [scale(0, 10, { max: 2 }, 'Intensity')] },
   { category: F, name: 'Basal body temperature', infoTypes: [num('°C', undefined, 'Temperature')] },
 ];
 
@@ -186,3 +128,16 @@ export function fromPreset(p: PresetSeed): Biomarker {
 export function presetBiomarkers(): Biomarker[] {
   return PRESETS.map(fromPreset);
 }
+
+/**
+ * Starter entries from older versions that are not real biomarkers (subjective ratings, habits,
+ * intake). Removed on upgrade unless the user has logged them or put them in a plan.
+ */
+export const REMOVED_PRESET_NAMES = [
+  'Sleep quality', 'Bedtime', 'Wake-up time', 'Feeling rested',
+  'Calories', 'Protein', 'Carbs', 'Fat', 'Fiber', 'Sugar', 'Water intake',
+  'Bowel movements', 'Stool type (Bristol scale)', 'Bloating', 'Heartburn',
+  'Mood', 'Energy', 'Stress', 'Anxiety', 'Focus', 'Motivation', 'Productivity', 'Meditation', 'Journal',
+  'Headache', 'Pain level', 'Muscle soreness', 'Allergy symptoms', 'Sick', 'Skin condition', 'Libido',
+  'Cycle day', 'Period flow', 'Cramps',
+];
